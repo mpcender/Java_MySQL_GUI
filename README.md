@@ -6,4 +6,8 @@ To use, [install MySQL](https://www.youtube.com/watch?v=u96rVINbAUI) locally and
 
 [Connecting to MySql with Connector/J](https://www.youtube.com/watch?v=_ySyOq-Hnpw)
 
+---
+
+Built off [dan-koller/Java-SQLite-Viewer](https://github.com/dan-koller/Java-SQLite-Viewer)
+
 
