@@ -263,7 +263,6 @@ public class MySQLViewer extends JFrame {
         executeButton.addActionListener(actionEvent -> {
             
             try (Statement statement = connection.createStatement()) {
-
                 System.out.println(queryTextArea.getText());
                 ResultSet resultSet = statement.executeQuery(queryTextArea.getText());
 
@@ -324,10 +323,11 @@ public class MySQLViewer extends JFrame {
         return tableNames;
     }
 
-    private void removeItem(int item_id){
+    //removeFacility(3);
+    private void removeFacility(int id){
         try{
-            PreparedStatement stmt = connection.prepareStatement("DELETE FROM ITEM WHERE Id = (?);");
-            stmt.setInt(1, item_id);
+            PreparedStatement stmt = connection.prepareStatement("DELETE FROM FACILITY WHERE Facility_Id = ?;");
+            stmt.setInt(1, id);
             if(stmt.executeUpdate() > 0){
                 System.out.println("SUCCESS");
                 // Maybe create a pop up idk (kyle)
@@ -339,6 +339,7 @@ public class MySQLViewer extends JFrame {
         }
     }
 
+    //addFacility(3, "KK", "Kyle Kryza", "2022-04-20", "2022-04-20", "Dream Team");
     private void addFacility(int id, String username, String contact, String created, String last_activity, String name){
         try{
             PreparedStatement stmt = connection.prepareStatement("INSERT INTO FACILITY VALUES (?, ?, ?, ?, ?, ?);");
