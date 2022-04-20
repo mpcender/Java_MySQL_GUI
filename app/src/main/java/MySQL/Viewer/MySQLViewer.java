@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -25,12 +26,15 @@ public class MySQLViewer extends JFrame {
     String host = "localhost";
     String port = "3306";
     String USER = "root";
-    String PASS = "password";
+    String PASS = "";
 
     public MySQLViewer() {
         // Basic window settings
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 850);
+        Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int)size.getWidth();
+        int height = (int)size.getHeight();
+        setSize(width, height);
         setLayout(new BorderLayout());
         setResizable(false);
         setLocationRelativeTo(null);
@@ -121,7 +125,7 @@ public class MySQLViewer extends JFrame {
         c.insets = new Insets(5,5,5,5);
 
         // NAME
-        JTextField databaseTextField = new JTextField();
+        JTextField databaseTextField = new JTextField("auction");
         buildInput(selectFilePanel, databaseTextField, c, 
             "Database Name:", "databaseTextField", 0);
 
@@ -141,7 +145,7 @@ public class MySQLViewer extends JFrame {
             "Username:", "userTextField", 3);
         
         // Password
-        JPasswordField passwordTextField = new JPasswordField("password");
+        JPasswordField passwordTextField = new JPasswordField("");
         buildInput(selectFilePanel, passwordTextField, c, 
             "Password:", "passwordTextField", 4);
 
@@ -259,6 +263,7 @@ public class MySQLViewer extends JFrame {
         executeButton.addActionListener(actionEvent -> {
             
             try (Statement statement = connection.createStatement()) {
+
                 System.out.println(queryTextArea.getText());
                 ResultSet resultSet = statement.executeQuery(queryTextArea.getText());
 
@@ -305,6 +310,7 @@ public class MySQLViewer extends JFrame {
         }
         
     }
+
     private ArrayList<String> getTables() throws SQLException {
         java.sql.DatabaseMetaData metaData = connection.getMetaData();
         
@@ -316,5 +322,41 @@ public class MySQLViewer extends JFrame {
             tableNames.add(tables.getString("TABLE_NAME"));
         }
         return tableNames;
+    }
+
+    private void removeItem(int item_id){
+        try{
+            PreparedStatement stmt = connection.prepareStatement("DELETE FROM ITEM WHERE Id = (?);");
+            stmt.setInt(1, item_id);
+            if(stmt.executeUpdate() > 0){
+                System.out.println("SUCCESS");
+                // Maybe create a pop up idk (kyle)
+            }
+
+        }
+        catch(Exception e){
+
+        }
+    }
+
+    private void addFacility(int id, String username, String contact, String created, String last_activity, String name){
+        try{
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO FACILITY VALUES (?, ?, ?, ?, ?, ?);");
+            stmt.setInt(1, id);
+            stmt.setString(2, username);
+            stmt.setString(3, contact);
+            stmt.setString(4, created);
+            stmt.setString(5, last_activity);
+            stmt.setString(6, name);
+            
+            if(stmt.executeUpdate() > 0){
+                System.out.println("SUCCESS");
+                // Maybe create a pop up idk (kyle)
+            }
+
+        }
+        catch(Exception e){
+
+        }
     }
 }
