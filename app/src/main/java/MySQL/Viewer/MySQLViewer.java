@@ -79,7 +79,7 @@ public class MySQLViewer extends JFrame {
     JButton addFac;
     JButton delFac;
 
-    private void buttonScheme(JPanel panel) {
+    private void viewButtonScheme(JPanel panel) {
         panel.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(10,10,10,10);
@@ -124,7 +124,12 @@ public class MySQLViewer extends JFrame {
     }
     JPanel selectTablePanel;
     
+    /**
+     * Dropdown table selector
+     * Has to be re-applied to main panel each time new view is selected
+     */
     private void addSelectTable() {
+        // Only build table panel once, re-apply if exists
         if (selectTablePanel != null) { 
             mainModPanel.add(selectTablePanel);
             return;
@@ -185,7 +190,7 @@ public class MySQLViewer extends JFrame {
         c.gridx = 5;
         selectFilePanel.add(openFileButton, c);
 
-        selectFilePanel.setBorder(BorderFactory.createTitledBorder("Select file"));
+        selectFilePanel.setBorder(BorderFactory.createTitledBorder("Connect to Database"));
 
         openFileButton.addActionListener(actionEvent -> {
             //Path filePath = Paths.get(databaseTextField.getText());
@@ -237,12 +242,12 @@ public class MySQLViewer extends JFrame {
 
 
         JButton openFileButton = new JButton("Delete");
-        openFileButton.setName("OpenFileButton");
+        openFileButton.setName("DeleteButton");
         c.gridx = 3;
         c.gridx = 5;
         selectFilePanel.add(openFileButton, c);
 
-        selectFilePanel.setBorder(BorderFactory.createTitledBorder("Select file"));
+        selectFilePanel.setBorder(BorderFactory.createTitledBorder("Delete Facility"));
 
         openFileButton.addActionListener(actionEvent -> {
 
@@ -306,8 +311,8 @@ public class MySQLViewer extends JFrame {
             "Company Name:", "companyField", 3);
     
 
-        JButton openFileButton = new JButton("Open");
-        openFileButton.setName("OpenFileButton");
+        JButton openFileButton = new JButton("Add");
+        openFileButton.setName("AddButton");
         c.gridx = 3;
         c.gridx = 5;
         selectFilePanel.add(openFileButton, c);
@@ -315,11 +320,7 @@ public class MySQLViewer extends JFrame {
         selectFilePanel.setBorder(BorderFactory.createTitledBorder("Add New Facility"));
 
         openFileButton.addActionListener(actionEvent -> {
-            //Path filePath = Paths.get(databaseTextField.getText());
-            //System.out.println(databaseTextField.getText());
-            /*
-            
-            */
+
             int id = Integer.parseInt(jId.getText());
             String user = jUser.getText();
             String contact = jContact.getText();
@@ -329,6 +330,7 @@ public class MySQLViewer extends JFrame {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String date = dateObj.format(formatter);
     
+            // Date is today & last_activity always null for new user.
             addFacility(id, user, contact, date , null, cName);
 
             tablesComboBox.removeAllItems();
@@ -415,8 +417,11 @@ public class MySQLViewer extends JFrame {
 
         JPanel panel = new JPanel();
         mainModPanel = selectionPanel;
-        buttonScheme(panel);
+
+        // Sets main button view for toggling different SQL forms
+        viewButtonScheme(panel);
         topPanel.add(panel);
+        // start with database login form
         loginView();
 
         //----------------------------------------------------------------------
@@ -482,43 +487,55 @@ public class MySQLViewer extends JFrame {
         tablesComboBox.addItemListener(actionEvent ->
                 queryTextArea.setText(String.format(SQL_ALL_ROWS, actionEvent.getItem().toString())));
         executeButton.addActionListener(actionEvent -> {
-            
-            try (Statement statement = connection.createStatement()) {
-                System.out.println(queryTextArea.getText());
-                ResultSet resultSet = statement.executeQuery(queryTextArea.getText());
-
-                ResultSetMetaData metaData = resultSet.getMetaData();
-                // Retrieve columns
-                int columnCount = metaData.getColumnCount();
-                String[] columns = new String[columnCount];
-
-                for (int i = 0; i < metaData.getColumnCount(); i++) {
-                    columns[i] = metaData.getColumnName(i + 1);
-                    System.out.println(columns[i]);
-                }
-                
-                // Retrieve row
-                Map<Integer, Object[]> data = new HashMap<>();
-                int i = 0;
-
-                while (resultSet.next()) {
-                    Object[] row = new Object[columnCount];
-                    for (int j = 0; j < columnCount; j++) {
-                        row[j] = resultSet.getObject(j + 1);
-                        System.out.println(row[j]);
-                    }
-                    data.put(i++, row);
-                }
-
-                table.setModel(new DataTableModel(columns, data));
-                resizeColumnWidth(table);
-            } catch (SQLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+            executeQuery(queryTextArea.getText());
         });
     }
 
+
+    /**
+     * Execute a string query
+     * @param qry
+     */
+    private void executeQuery(String qry) {
+        try (Statement statement = connection.createStatement()) {
+            System.out.println(queryTextArea.getText());
+            ResultSet resultSet = statement.executeQuery(qry);
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            // Retrieve columns
+            int columnCount = metaData.getColumnCount();
+            String[] columns = new String[columnCount];
+
+            for (int i = 0; i < metaData.getColumnCount(); i++) {
+                columns[i] = metaData.getColumnName(i + 1);
+                System.out.println(columns[i]);
+            }
+            
+            // Retrieve row
+            Map<Integer, Object[]> data = new HashMap<>();
+            int i = 0;
+
+            while (resultSet.next()) {
+                Object[] row = new Object[columnCount];
+                for (int j = 0; j < columnCount; j++) {
+                    row[j] = resultSet.getObject(j + 1);
+                    System.out.println(row[j]);
+                }
+                data.put(i++, row);
+            }
+
+            table.setModel(new DataTableModel(columns, data));
+            resizeColumnWidth(table);
+        } catch (SQLException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Execute a prepared statement
+     * @param stmt
+     */
     private void executeStatement(PreparedStatement stmt) {
         try  {
             if (!stmt.execute()) {  return; }
@@ -555,6 +572,10 @@ public class MySQLViewer extends JFrame {
         }
     }
 
+    /**
+     * Resizes columns to fit data
+     * @param table
+     */
     public void resizeColumnWidth(JTable table) {
         final TableColumnModel columnModel = table.getColumnModel();
         for (int column = 0; column < table.getColumnCount(); column++) {
@@ -570,7 +591,9 @@ public class MySQLViewer extends JFrame {
         }
     }
 
-
+    /**
+     * Connect to the database
+     */
     private void connect(){
         // Database name is same as "Schema" from MySQL workbench
         url = "jdbc:mysql://" + host + ":" + port + "/" + database;
@@ -588,6 +611,11 @@ public class MySQLViewer extends JFrame {
         
     }
 
+    /**
+     * Gets table view for database
+     * @return
+     * @throws SQLException
+     */
     private ArrayList<String> getTables() throws SQLException {
         java.sql.DatabaseMetaData metaData = connection.getMetaData();
         
@@ -607,6 +635,7 @@ public class MySQLViewer extends JFrame {
             PreparedStatement stmt = connection.prepareStatement("DELETE FROM FACILITY WHERE Facility_Id = ?;");
             stmt.setInt(1, id);
             executeStatement(stmt);
+            executeQuery("SELECT * FROM facility;");
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -626,6 +655,7 @@ public class MySQLViewer extends JFrame {
             stmt.setString(6, name);
             
             executeStatement(stmt);
+            executeQuery("SELECT * FROM facility;");
         }
         catch(Exception e){
 
