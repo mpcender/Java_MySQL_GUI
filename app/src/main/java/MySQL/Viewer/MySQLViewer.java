@@ -487,10 +487,29 @@ public class MySQLViewer extends JFrame {
         tablesComboBox.addItemListener(actionEvent ->
                 queryTextArea.setText(String.format(SQL_ALL_ROWS, actionEvent.getItem().toString())));
         executeButton.addActionListener(actionEvent -> {
-            executeQuery(queryTextArea.getText());
+            if(queryTextArea.getText().toLowerCase().contains("update")){
+                executeUpdate(queryTextArea.getText());
+            }
+            else{
+                executeQuery(queryTextArea.getText());
+            }
         });
     }
 
+    /**
+     * Execute a string query
+     * @param qry
+     */
+    private void executeUpdate(String qry) {
+        try (Statement statement = connection.createStatement()) {
+            System.out.println(queryTextArea.getText());
+            if(statement.executeUpdate(qry) > 0){
+                System.out.println("Successful Update");
+            }
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+        }
+    }
 
     /**
      * Execute a string query

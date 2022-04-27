@@ -3,7 +3,7 @@
 
 ### Screencast
 
-[Deliverable 4 Video](https://youtu.be/YeBPrqgIlCg)
+[Deliverable 4 Video](https://youtu.be/yWjvIIy_3lk)
 
 ### How do run
 
@@ -23,3 +23,11 @@ HAVING COUNT(Minimum_Bid) > 0;
 
 SELECT Payment, Customer_First_Name, Customer_Last_Name
 FROM INVOICE;
+
+### Update Query
+
+#### [1] Update facility name based on id (example)
+
+UPDATE FACILITY
+SET Company_Name = 'MKEKJ Co."
+WHERE Facility_ID = 0; 
