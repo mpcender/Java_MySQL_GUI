@@ -11,7 +11,7 @@ Our project runs using a build environment called Gradle. Call 'gradle run' (lik
 
 ### Two SQL select queries
 
-#### [1] Find the amount of items which have a minimum bid above 5, grouped by their respective lot number.
+#### [1] Find the amount of items which have a minimum bid above 15, grouped by their respective lot number.
 
 SELECT COUNT(Minimum_Bid), Lot_Number
 FROM item
@@ -29,5 +29,5 @@ FROM INVOICE;
 #### [1] Update facility name based on id (example)
 
 UPDATE FACILITY
-SET Company_Name = 'MKEKJ Co."
+SET Company_Name = "MKEKJ Co."
 WHERE Facility_ID = 0; 
